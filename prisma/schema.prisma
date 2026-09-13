@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// 1 user model 
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  apiKeys   ApiKey[]
+  createdAt DateTime @default(now())
+}
+
+// 2 API Key Model (Stores hased key for security)
+
+model ApiKey {
+  id         String   @id @default(uuid())
+  name       String 
+  keyHash    String   @unique
+  keyDisplay String 
+  isActive   Boolean  @default(true)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs       ApiLog[]
+  createdAt  DateTime @default(now())
+}
+
+
+// 3 API request Log model
+model ApiLog {
+  id        String   @id @default(uuid())
+  apiKeyId  String
+  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  endpoint  String
+  status    Int // HTTP status code (200, 401, 429)
+  createdAt DateTime @default(now())
+}
